@@ -50,10 +50,12 @@ def status():
 def process():
     json_payload = request.json
 
+    app.logger.info("Input: " + str(json_payload))
+
     try:
         review_text = json_payload['review_text']
     except KeyError:
-        print("Not valid data input syntax")
+        app.logger.error("Not valid data input syntax")
         return 'bad request', 400
     inputs = tokenizer(review_text, padding=True, truncation=True, max_length=512, return_tensors='pt')
     inputs = inputs.to(device)
@@ -75,5 +77,5 @@ def process():
     else :
         requests.post(moderated_reviews_sink, data=body, headers=headers)
 
-    return "Success", 200
+    return '', 204
   
