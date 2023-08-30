@@ -14,8 +14,7 @@ from flask import Flask, request, jsonify
 model_name = 'Hate-speech-CNERG/english-abusive-MuRIL'
 
 TRANSFORMERS_CACHE = os.environ['TRANSFORMERS_CACHE']
-moderated_reviews_sink = os.environ['moderated_reviews_sink']
-denied_reviews_sink = os.environ['denied_reviews_sink']
+moderated_reviews_sink = os.environ['K_SINK']
 attributes = {
     "type": os.environ['ce_type'],
     "source": os.environ['ce_source']
@@ -73,9 +72,13 @@ def process():
     headers, body = to_binary(event)
 
     if score == 0:
-        requests.post(denied_reviews_sink, data=body, headers=headers)
+        attributes["globexreviewabusive"] = "1"
     else :
-        requests.post(moderated_reviews_sink, data=body, headers=headers)
+        attributes["globexreviewabusive"] = "0"
+    
+    event = CloudEvent(attributes, sentiment_data)
+    headers, body = to_binary(event)
+    requests.post(moderated_reviews_sink, data=body, headers=headers)
 
     return '', 204
   
